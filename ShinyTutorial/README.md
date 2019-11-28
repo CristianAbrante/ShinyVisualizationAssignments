@@ -3,5 +3,10 @@
 
 <p align="center">
   <img alt="UPM" src="https://img.shields.io/badge/EIT%20Digital-UPM-blue?style=flat-square">
-  <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/CristianAbrante/ShinyTutorial?style=flat-square">
 </p>
+
+## Objective
+In this first assignment, the aim is to follow a written tutorial of [Shiny fo Rstudio](https://shiny.rstudio.com/tutorial/written-tutorial/lesson1/). 
+
+## Lessons
+The activities of the lessons can be found in the different subfolders of this folder.
