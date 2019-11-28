@@ -6,5 +6,5 @@ The chosen method to share it was as gist in github. It can
 be run easily executing:
 
 ```R
-shinny::runGist("1bfc00a1b66fa34a941193b80fb2a959")
+shiny::runGist("1bfc00a1b66fa34a941193b80fb2a959")
 ```
