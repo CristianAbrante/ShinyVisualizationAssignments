@@ -41,14 +41,6 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-    
-    # output$selected_var <- renderText({ 
-    #     paste("You have selected ",input$var_name)
-    # })
-    # output$selected_var_2 <- renderText({ 
-    #     paste("You have chosen a range that goes from ",input$bins[1], "to",input$bins[2])
-    # })
-
     output$map <- renderPlot({
         data <- switch(input$var, 
                        "Percent White" = counties$white,
