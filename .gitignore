@@ -45,3 +45,5 @@ vignettes/*.pdf
 /*_files/
 
 # End of https://www.gitignore.io/api/r
+#The files should be downloaded manually from the source (https://www.kaggle.com/rusiano/madrid-airbnb-data#listings.csv) to avoid overloading the repo
+ShinyAirBnB/Data/
