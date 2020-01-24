@@ -24,6 +24,7 @@ GeoData <- readLines("./Data/neighbourhoods.geojson") %>% paste(collapse = "\n")
 
 #Reading the file with the price data 
 listings <- read.csv(file = "./Data/listings.csv",sep = ",",header = T) 
+calendar <- read.csv(file = "./Data/calendar.csv",sep = ",",header = T) 
 
 #We extract the price mean per neighb.
 neigh_mean_prices <- aggregate(listings$price, list(listings$neighbourhood), mean)
@@ -39,7 +40,7 @@ m  # Print the map
 #We create the labels for the map
 labels <- sprintf(
     "<strong>%s</strong><br/>%g €",
-    neigh_mean_prices$Group.1, neigh_mean_prices$x
+    neigh_mean_prices$Group.1, round(neigh_mean_prices$x, 2)
 ) %>% lapply(htmltools::HTML)
 
 # We set some clours for our scale
@@ -86,24 +87,41 @@ mainmap <- leaflet(neighbourhoods, options = providerTileOptions(minZoom = 10, m
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Madrid AirBnB Price per neighbourhood"),
+    titlePanel("Madrid's AirBnBs Price per neighbourhood"),
 
-    # Sidebar with a slider input for number of bins 
-    fillPage(
-        sidebarPanel(
-            "Here you can see the differece in average prices from all the different neighbourhoods of Madrid"
-            # sliderInput("zoom",
-            #             "Amount of zoom:",
-            #             min = 10,
-            #             max = 15,
-            #             value = 11)
+    # Tabbed views
+    tabsetPanel(type = "tabs",
+        #First tab: Choropleth
+        tabPanel("Chloropleth",
+            sidebarLayout(
+                sidebarPanel(
+                    "Here you can see the differece in average prices from all the different neighbourhoods of Madrid"
+                    # sliderInput("zoom",
+                    #             "Amount of zoom:",
+                    #             min = 10,
+                    #             max = 15,
+                    #             value = 11)
+                ),
+                # Show the Map
+                mainPanel(
+                   mainmap
+                )
+            )
         ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           mainmap
+        #Second tab: Bar Plot
+        tabPanel("Month by Month",
+            sidebarLayout(
+                sidebarPanel(
+                    "Second pannel"
+                ),
+                # Show a plot of the generated distribution
+                mainPanel(
+                    mainmap
+                )
+            )
         )
     )
+    #End of sidebar panel
 )
 
 # Define server logic required to draw a histogram
