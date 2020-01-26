@@ -8,14 +8,14 @@ library(ggplot2)
 library(dplyr)
 
 # Load data for tabs
-load("utils/utils.R")
+source("utils/utils.R")
 
 # Load tabs
-load("views/first_tab.R")
+source("views/first_tab.R")
 
 # Load ui and server
-load("ui.R")
-load("server.R")
+source("ui.R")
+source("server.R")
 
 # Launch apñ
 shinyApp(ui = ui, server = server)
