@@ -8,7 +8,7 @@ source("utils/utils.R")
 server <- function(input, output, session) {
   output$calendar_price_year_plot_error <-
     renderUI({
-               if (input$from_year >= input$to_year) {
+               if (input$from_year > input$to_year) {
                  tags$span(
                    style = "color:red; font-weight:bold",
                    paste0('"From Year" (', input$from_year, ') must be before "To Year" (', input$to_year, ')')
@@ -27,6 +27,7 @@ server <- function(input, output, session) {
                  Sys.sleep(1.5) # sleep to show spinner example longer
 
                  plot_input <- calendar %>%
+                   filter(date_year >= input$from_year & date_year <= input$to_year)
                    group_by(date_year, date_month) %>%
                    summarise(average_price = mean(price, na.rm = TRUE))
 
