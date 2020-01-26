@@ -8,13 +8,13 @@ library(lubridate)
 
 
 #We load the geographical data
-ngb <- geojsonio::geojson_read("./Data/neighbourhoods_utf8.geojson", what = "sp")
+ngb <- geojsonio::geojson_read("../Data/neighbourhoods_utf8.geojson", what = "sp")
 ngb2 <- ngb[order(ngb$neighbourhood),] #We sort the neighbourhoods to have them in alphabetical order.
 
 #Reading the file with the price data 
-listings <- read.csv(file = "./Data/listings.csv", sep = ",", header = T, encoding = "UTF-8")
+listings <- read.csv(file = "../Data/listings.csv", sep = ",", header = T, encoding = "UTF-8")
 # calendar <- read.csv(file = "./Data/calendar.csv", sep = ",", header = T)
-scal <- read.csv(file = "Data/calendar_sample.csv", sep = ",", header = T)
+scal <- read.csv(file = "../Data/calendar_sample.csv", sep = ",", header = T)
 
 #We extract the price mean per neighbourhood.
 neigh_mean_prices <- aggregate(listings$price, list(listings$neighbourhood), mean)
@@ -52,7 +52,7 @@ ui <- fluidPage(
 titlePanel("Madrid's AirBnBs Price per neighbourhood"),
 
 # Tabbed views
-tabsetPanel(type = "views",
+tabsetPanel(type = "",
             #First tab: Choropleth
             tabPanel("Chloropleth",
                      sidebarLayout(

@@ -39,4 +39,32 @@ server <- function(input, output, session) {
 
                  plot_out
                })
+
+  output$map_plot <- output$map <- renderLeaflet({
+                                #Testing the load of the file as an SP obj
+                                leaflet(neighbourhoods, options = providerTileOptions(minZoom = 10, maxZoom = 14)) %>%
+                                  addTiles() %>%
+                                  addProviderTiles(providers$CartoDB.Positron) %>%
+                                  setView(lng = -3.66, lat = 40.43, zoom = 11) %>%
+                                  addPolygons(
+                                    fillColor = ~pal(neigh_mean_prices[, 2]),
+                                    weight = 2,
+                                    opacity = 1,
+                                    color = "white",
+                                    dashArray = "3",
+                                    fillOpacity = 0.3,
+                                    highlight = highlightOptions(
+                                      weight = 5,
+                                      color = "#666",
+                                      dashArray = "",
+                                      fillOpacity = 0.5,
+                                      bringToFront = TRUE),
+                                    label = labels,
+                                    labelOptions = labelOptions(
+                                      style = list("font-weight" = "normal", padding = "3px 8px"),
+                                      textsize = "15px",
+                                      direction = "auto")) %>%
+                                  addLegend(pal = pal, values = ~neigh_mean_prices[, 2], opacity = 0.7, title = NULL,
+                                            position = "bottomright")
+                              })
 }
