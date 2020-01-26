@@ -7,6 +7,7 @@ source("utils/utils.R")
 
 # Load tabs
 source("views/first_tab.R")
+source("views/second_tab.R")
 
 # Wrap shinymaterial apps in material_page
 ui <- material_page(
@@ -21,8 +22,5 @@ ui <- material_page(
   ),
   # Define tab content
   first_tab_content,
-  material_tab_content(
-    tab_id = "second_tab",
-    tags$h1("Second Tab Content")
-  )
+  second_tab_content
 )
