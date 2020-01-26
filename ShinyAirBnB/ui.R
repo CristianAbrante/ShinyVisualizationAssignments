@@ -1,3 +1,12 @@
+library(shiny)
+library(shinymaterial)
+
+# Load data for tabs
+source("utils/utils.R")
+
+# Load tabs
+source("views/first_tab.R")
+
 # Wrap shinymaterial apps in material_page
 ui <- material_page(
   title = "Madrid Airbnb Research",

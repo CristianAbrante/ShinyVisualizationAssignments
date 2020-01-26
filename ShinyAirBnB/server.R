@@ -1,3 +1,10 @@
+library(shiny)
+library(ggplot2)
+library(dplyr)
+
+# Load data for tabs
+source("utils/utils.R")
+
 server <- function(input, output, session) {
   output$calendar_price_year_plot_error <-
     renderUI({
