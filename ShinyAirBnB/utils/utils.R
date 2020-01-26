@@ -55,12 +55,13 @@ get_price_per_neighbours_with_dates <- function(start_date, end_date) {
       filter(as.Date(date, format="%Y-%m-%d") >= start_date_formatted) %>% 
       filter(as.Date(date, format="%Y-%m-%d") <= end_date_formatted) %>% 
       group_by(neighbourhood) %>% 
-      summarise(avg_price = mean(computed_price))
+      summarise(avg_price = mean(computed_price)) %>% 
+      arrange(neighbourhood)
   } else {
     calendar_and_listings %>%  
       group_by(neighbourhood) %>% 
-      summarise(avg_price = mean(computed_price))
-    
+      summarise(avg_price = mean(computed_price)) %>% 
+      arrange(neighbourhood)
   }
 }
 
@@ -77,17 +78,25 @@ ngb2 <- ngb[order(ngb$neighbourhood),] #We sort the neighbourhoods to have them 
 listCols = c(1:100)
 listCols[1:106] = "NULL"
 listCols[1] = NA	#id
-listCols[5] = NA	#name
-listCols[6] = NA	#summary
-listCols[10] = NA	#neighborhood_overview
-listCols[23] = NA	#host_since
+#listCols[5] = NA	#name
+#listCols[6] = NA	#summary
+#listCols[10] = NA	#neighborhood_overview
+#listCols[23] = NA	#host_since
 listCols[40] = NA	#neighbourhood_cleansed
-listCols[49] = NA	#latitude
-listCols[50] = NA	#longitude
-listCols[52] = NA	#property_type
+#listCols[49] = NA	#latitude
+#listCols[50] = NA	#longitude
+#listCols[52] = NA	#property_type
 listCols[61] = NA	#price
 listCols[83] = NA	#number_of_reviews
+listCols[85] = NA	#first_review
+listCols[86] = NA	#last_review
 listCols[87] = "integer"	#review_scores_rating
+listCols[88] = "integer"	#review_scores_accuracy
+listCols[89] = "integer"	#review_scores_cleanliness
+listCols[90] = "integer"	#review_scores_checkin
+listCols[91] = "integer"	#review_scores_communication
+listCols[92] = "integer"	#review_scores_location
+listCols[93] = "integer"	#review_scores_value
 listCols[106] = NA	#reviews_per_month
 
 #Reading the file with the price data
@@ -98,7 +107,13 @@ scal <- read.csv(file = "./Data/calendar_sample.csv", sep = ",", header = T)
 listings$numprices =  as.numeric(sub("$","",sub(".","",sub(",","",listings$price)))) 
 
 #We extract the review score avg per neighbourhood.
-neigh_mean_scores <- aggregate(listings$review_scores_rating, list(listings$neighbourhood_cleansed), mean, na.rm=T)
+neigh_mean_scores_rating <- aggregate(listings$review_scores_rating, list(listings$neighbourhood_cleansed), mean, na.rm=T)
+neigh_mean_scores_accuracy <- aggregate(listings$review_scores_accuracy, list(listings$neighbourhood_cleansed), mean, na.rm=T)
+neigh_mean_scores_cleanliness <- aggregate(listings$review_scores_cleanliness, list(listings$neighbourhood_cleansed), mean, na.rm=T)
+neigh_mean_scores_checkin <- aggregate(listings$review_scores_checkin, list(listings$neighbourhood_cleansed), mean, na.rm=T)
+neigh_mean_scores_communication <- aggregate(listings$review_scores_communication, list(listings$neighbourhood_cleansed), mean, na.rm=T)
+neigh_mean_scores_location <- aggregate(listings$review_scores_location, list(listings$neighbourhood_cleansed), mean, na.rm=T)
+neigh_mean_scores_value <- aggregate(listings$review_scores_value, list(listings$neighbourhood_cleansed), mean, na.rm=T)
 
 #We extract the price mean per neighbourhood.
 neigh_mean_prices <- aggregate(listings$numprices, list(listings$neighbourhood_cleansed), mean)
@@ -116,15 +131,7 @@ labels <- sprintf(
 bins <- c(0, 50, 100, 200, 300, 400, 500, Inf)
 pal <- colorBin("YlOrRd", domain = neigh_mean_prices$x, bins = bins)
 
-#We create the labels for the map 2
-labels2 <- sprintf(
-  "<strong>%s</strong><br/>%g avg. score",
-  neigh_mean_scores$Group.1, round(neigh_mean_scores$x, 2)
-) %>% lapply(htmltools::HTML)
 
-#bins = seq(min(neigh_mean_scores$x),100,5) or similar
-bins2 <- c(75, 80, 85, 90, 95, 100)
-pal2 <- colorBin("YlOrRd", domain = neigh_mean_scores$x, bins = bins2)
 
 #We set the chosen dataset for the map
 neighbourhoods <- ngb2

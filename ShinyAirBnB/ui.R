@@ -17,8 +17,8 @@ ui <- material_page(
   # Define views
   material_tabs(
     tabs = c(
-      "Point 1" = "first_tab",
-      "Point 2" = "second_tab",
+      "Bar Plot - Availability" = "first_tab",
+      "Choropleth - Overview" = "second_tab",
       "Third tab" = "third_tab"
     )
   ),
