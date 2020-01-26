@@ -2,7 +2,7 @@ first_tab_content <- material_tab_content(
   tab_id = "first_tab",
   material_parallax(
     image_source =
-      "https://grupoacerta.com/wp-content/uploads/2019/07/madrid-landscape.jpg"
+      "https://besthqwallpapers.com/img/original/107273/4k-madrid-gran-via-cityscapes-spanish-cities.jpg"
   ),
   material_row(
     material_column(
