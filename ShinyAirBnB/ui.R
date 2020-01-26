@@ -1,5 +1,6 @@
 library(shiny)
 library(shinymaterial)
+library(leaflet)
 
 # Load data for tabs
 source("utils/utils.R")

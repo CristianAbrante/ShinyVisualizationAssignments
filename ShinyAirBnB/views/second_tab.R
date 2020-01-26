@@ -9,8 +9,7 @@ first_tab_content <- material_tab_content(
       width = 12,
       material_card(
         title = "Map",
-        plotOutput("map_plot"),
-        uiOutput("map_plot_error")
+         leafletOutput("map")
       )
     )
   )
