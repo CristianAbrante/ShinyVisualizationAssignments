@@ -140,4 +140,48 @@ server <- function(input, output, session) {
                 position = "bottomright")
     
   })
+  output$cloropleth <- 
+    renderLeaflet({
+      price_per_neighbourhood <-
+        get_price_per_neighbours_with_dates(input$price_start_date, input$price_end_date)
+      
+      #We create the labels for the map
+      labels <- sprintf(
+        "<strong>%s</strong><br/>%g €",
+        price_per_neighbourhood$neighbourhood, round(price_per_neighbourhood$avg_price, 2)
+      ) %>% lapply(htmltools::HTML)
+      
+      # We set some clours for our scale
+      bins <- c(0, 50, 100, 200, 300, 400, 500, Inf)
+      pal <- colorBin("YlOrRd", domain = price_per_neighbourhood$avg_price, bins = bins)
+      
+      #We set the chosen dataset for the map
+      neighbourhoods <- ngb2
+      
+      leaflet(
+        neighbourhoods, 
+        options = providerTileOptions(minZoom = 10, maxZoom = 14))  %>%
+        addTiles() %>% 
+        addProviderTiles(providers$CartoDB.Positron) %>% 
+        setView(lng = -3.66, lat = 40.43, zoom = 11) %>% 
+        addPolygons( 
+          fillColor = ~pal(price_per_neighbourhood$avg_price),
+          weight = 2,
+          opacity = 1,
+          color = "white",
+          dashArray = "3",
+          fillOpacity = 0.3,
+          highlight = highlightOptions(
+            weight = 5,
+            color = "#666",
+            dashArray = "",
+            fillOpacity = 0.5,
+            bringToFront = TRUE),
+          label = labels,
+          labelOptions = labelOptions(
+            style = list("font-weight" = "normal", padding = "3px 8px"),
+            textsize = "15px",
+            direction = "auto")) %>% 
+        addLegend(pal = pal, values = ~price_per_neighbourhood$avg_price, opacity = 0.7, title = NULL, position = "bottomright")
+    })
 }

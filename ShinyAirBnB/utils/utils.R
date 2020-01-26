@@ -5,6 +5,19 @@ library(geojsonio)
 library(sf)
 library(lubridate)
 
+calendar_sample <-
+  read.csv(
+    './Data/calendar_sample.csv',
+    encoding = "UTF-8",
+    header = TRUE,
+  )
+
+listings <- read.csv(
+  './Data/listings.csv',
+  encoding = "UTF-8",
+  header = TRUE,
+)
+
 calendar <- read.csv("Data/calendar_sample.csv")
 
 # Remove NA
@@ -25,6 +38,30 @@ transform_price <- function(price) {
   price_string <- gsub(",", "", price_string)
 
   as.numeric(price_string)
+}
+
+# Agreagtion of calendar and listings.
+calendar_and_listings <- inner_join(x = calendar_sample, y = listings, by = c("listing_id" = "id"))
+calendar_and_listings <- mutate(calendar_and_listings, computed_price = as.numeric(gsub("[$,]","",as.character(calendar_and_listings$price.x))))
+
+# necessary for locale time.
+lct <- Sys.getlocale("LC_TIME"); Sys.setlocale("LC_TIME", "C");
+# function that returns the prices per neighbourhood given an start and end date.
+get_price_per_neighbours_with_dates <- function(start_date, end_date) {
+  if (start_date != "" & end_date != "") {
+    start_date_formatted <-  as.Date(start_date, format = "%b %d, %Y");
+    end_date_formatted <- as.Date(end_date, format = "%b %d, %Y");
+    calendar_and_listings <- calendar_and_listings %>% 
+      filter(as.Date(date, format="%Y-%m-%d") >= start_date_formatted) %>% 
+      filter(as.Date(date, format="%Y-%m-%d") <= end_date_formatted) %>% 
+      group_by(neighbourhood) %>% 
+      summarise(avg_price = mean(computed_price))
+  } else {
+    calendar_and_listings %>%  
+      group_by(neighbourhood) %>% 
+      summarise(avg_price = mean(computed_price))
+    
+  }
 }
 
 ## Preprocess dataset
