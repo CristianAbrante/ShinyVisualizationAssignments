@@ -1,3 +1,5 @@
+library(dplyr)
+
 calendar <- read.csv("Data/calendar_sample.csv")
 
 # Remove NA

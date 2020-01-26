@@ -20,14 +20,14 @@ server <- function(input, output, session) {
 
   output$calendar_price_year_plot <-
     renderPlot({
-                 if (input$from_year >= input$to_year) return(NULL)
+                 if (input$from_year > input$to_year) return(NULL)
 
                  material_spinner_show(session, "calendar_price_year")
 
                  Sys.sleep(1.5) # sleep to show spinner example longer
 
                  plot_input <- calendar %>%
-                   filter(date_year >= input$from_year & date_year <= input$to_year)
+                   filter(date_year >= input$from_year & date_year <= input$to_year) %>%
                    group_by(date_year, date_month) %>%
                    summarise(average_price = mean(price, na.rm = TRUE))
 
