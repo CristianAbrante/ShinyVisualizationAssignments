@@ -4,6 +4,7 @@ library(leaflet)
 library(geojsonio)
 library(sf)
 library(lubridate)
+library(ggplot2)
 
 calendar_sample <-
   read.csv(
