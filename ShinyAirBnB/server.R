@@ -139,43 +139,47 @@ server <- function(input, output, session) {
   output$sentiment_analysis_positive_wordcloud <-
     renderPlot({
                  material_spinner_show(session, "sentiment_analysis_positive_wordcloud")
+      
+                 plot_input <- reviews_dataset
 
                  if (input$start_date != "" & input$end_date != "") {
                    start_date_formatted <- as.Date(input$start_date, format = "%b %d, %Y")
                    end_date_formatted <- as.Date(input$end_date, format = "%b %d, %Y")
 
-                   plot_input <- reviews_dataset %>%
+                   plot_input <- plot_input %>%
                      filter(as.Date(date, format = "%Y-%m-%d") >= start_date_formatted) %>%
                      filter(as.Date(date, format = "%Y-%m-%d") <= end_date_formatted)
-                   show_wordcloud(plot_input, TRUE)
                  }
-                 else {
-                   plot_input <- reviews_dataset
-                   show_wordcloud(plot_input, TRUE)
-                 }
-
+                 
+                 # Get subsample
+                 plot_input <- top_n(plot_input, 10000)
+                 positive_frequent_words <- get_frequent_words(plot_input, TRUE)
                  material_spinner_hide(session, "sentiment_analysis_positive_wordcloud")
+                 
+                 ## Generate wordcloud
+                 wordcloud2(data=frequent_words, size=1.6, color='random-dark')
                })
 
   output$sentiment_analysis_negative_wordcloud <-
     renderPlot({
                  material_spinner_show(session, "sentiment_analysis_negative_wordcloud")
 
+                 plot_input <- reviews_dataset
+                
                  if (input$start_date != "" & input$end_date != "") {
                    start_date_formatted <- as.Date(input$start_date, format = "%b %d, %Y")
                    end_date_formatted <- as.Date(input$end_date, format = "%b %d, %Y")
-
-                   plot_input <- reviews_dataset %>%
+                   
+                   plot_input <- plot_input %>%
                      filter(as.Date(date, format = "%Y-%m-%d") >= start_date_formatted) %>%
                      filter(as.Date(date, format = "%Y-%m-%d") <= end_date_formatted)
-                   show_wordcloud(plot_input, FALSE)
                  }
-                 else {
-                   plot_input <- reviews_dataset
-                   show_wordcloud(plot_input, FALSE)
-                 }
-
+                
+                 negative_frequent_words <- get_frequent_words(plot_input, FALSE)
                  material_spinner_hide(session, "sentiment_analysis_negative_wordcloud")
+                
+                 ## Generate wordcloud
+                 wordcloud2(data=negative_frequent_words, size=1.6, color='random-dark')
                })
 
   output$map <- renderLeaflet({

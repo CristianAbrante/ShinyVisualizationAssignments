@@ -78,11 +78,6 @@ neighbourhoods <- ngb2
 #                     Start graph                                  #
 ####################################################################
 
-## Preprocess dataset
-calendar <- calendar %>% mutate(date_year = get_year_from_date(calendar$date))
-calendar <- calendar %>% mutate(date_month = get_month_from_date(calendar$date))
-calendar <- calendar %>% mutate(price = as.numeric(transform_price(calendar$price)))
-
 get_year_from_date <- function(date) {
   format(as.Date(date), "%Y")
 }
@@ -90,6 +85,12 @@ get_year_from_date <- function(date) {
 get_month_from_date <- function(date) {
   format(as.Date(date), "%m")
 }
+
+## Preprocess dataset
+calendar <- calendar %>% mutate(date_year = get_year_from_date(calendar$date))
+calendar <- calendar %>% mutate(date_month = get_month_from_date(calendar$date))
+calendar <- calendar %>% mutate(price = as.numeric(transform_price(calendar$price)))
+
 
 transform_price <- function(price) {
   ## Remove dollar sign
@@ -302,9 +303,6 @@ addLegendToMap <- function(initialOptions, data, pal) {
     position = "bottomright"
   )
 }
-reviews_dataset <- reviews_dataset %>% mutate(date_year = get_year_from_date(reviews_dataset$date))
-reviews_dataset <- reviews_dataset %>% mutate(date_month = get_month_from_date(reviews_dataset$date))
-reviews_dataset$comments <- as.character(reviews_dataset$comments)
 
 fancy_text_title <- theme(title = element_text(color = "chocolate",
                                                       size = 14, face = "bold", margin = 3, line = 2))
