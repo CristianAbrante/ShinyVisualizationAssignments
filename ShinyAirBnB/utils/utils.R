@@ -19,9 +19,11 @@ listings <- read.csv(
 )
 
 calendar <- read.csv("Data/calendar_sample.csv")
+reviews_dataset <- read.csv("Data/reviews_detailed_sample.csv", encoding = "UTF-8")
 
 # Remove NA
 calendar <- na.omit(calendar)
+reviews_dataset <- na.omit(reviews_dataset)
 
 get_year_from_date <- function(date) {
   format(as.Date(date), "%Y")
@@ -69,6 +71,9 @@ get_price_per_neighbours_with_dates <- function(start_date, end_date) {
 calendar <- calendar %>% mutate(date_year = get_year_from_date(calendar$date))
 calendar <- calendar %>% mutate(date_month = get_month_from_date(calendar$date))
 calendar <- calendar %>% mutate(price = as.numeric(transform_price(calendar$price)))
+
+reviews_dataset <- reviews_dataset %>% mutate(date_year = get_year_from_date(reviews_dataset$date))
+reviews_dataset <- reviews_dataset %>% mutate(date_month = get_month_from_date(reviews_dataset$date))
 
 ## Load map data
 ngb <- geojsonio::geojson_read("./Data/neighbourhoods_utf8.geojson", what = "sp")
@@ -136,3 +141,13 @@ pal <- colorBin("YlOrRd", domain = neigh_mean_prices$x, bins = bins)
 #We set the chosen dataset for the map
 neighbourhoods <- ngb2
 
+fancy_text_title <- theme(title = element_text(color = "chocolate",
+                                                      size = 14, face = "bold", margin = 3, line = 2))
+
+fancy_plot <-
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks = element_blank(),
+    legend.title = element_blank(),
+  ) +
+  fancy_text_title

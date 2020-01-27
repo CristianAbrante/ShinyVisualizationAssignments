@@ -4,39 +4,46 @@ first_tab_content <- material_tab_content(
     image_source =
       "https://besthqwallpapers.com/img/original/107273/4k-madrid-gran-via-cityscapes-spanish-cities.jpg"
   ),
-  material_row(
-    material_column(
-      width = 3,
-      material_slider(
-        input_id = "from_year",
-        label = "From Year",
-        min_value = min(calendar$date_year),
-        max_value = max(calendar$date_year),
-        initial_value = min(calendar$date_year),
-        color = "blue"
-      )
-    ),
-    material_column(
-      width = 3,
-      material_slider(
-        input_id = "to_year",
-        label = "To Year",
-        min_value = min(calendar$date_year),
-        max_value = max(calendar$date_year),
-        initial_value = max(calendar$date_year),
-        color = "blue"
+  material_card(
+    title = "Filters",
+    material_row(
+      align = "center",
+      material_column(
+        offset = 2,
+        width = 4,
+        material_date_picker(
+          input_id = "start_date",
+          color = "red",
+          label = "Start date"
+        ),
+      ),
+      material_column(
+        width = 4,
+        material_date_picker(
+          input_id = "end_date",
+          color = "red",
+          label = "End date"
+        )
       )
     )
   ),
-  material_row(
-    material_column(
-      width = 12,
-      material_card(
-        title = "Price per year",
-        plotOutput("calendar_price_year_plot"),
-        uiOutput("calendar_price_year_plot_error")
+  material_card(
+    title = "Bar charts",
+    material_row(
+      material_column(
+        width = 6,
+        material_card(
+          title = "Price per year",
+          plotOutput("calendar_price_year_plot")
+        )
+      ),
+      material_column(
+        width = 6,
+        material_card(
+          title = "Number of Reviews per year",
+          plotOutput("calendar_reviews_year_plot")
+        )
       )
-    )
-  )
+    )),
 )
 
