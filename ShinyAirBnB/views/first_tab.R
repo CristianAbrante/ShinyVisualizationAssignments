@@ -45,5 +45,23 @@ first_tab_content <- material_tab_content(
         )
       )
     )),
+  material_card(
+    title = "Sentiment Analysis",
+    material_row(
+      material_column(
+        width = 6,
+        material_card(
+          title = "WordCloud based on positive reviews",
+          plotOutput("sentiment_analysis_positive_wordcloud")
+        )
+      ),
+      material_column(
+        width = 6,
+        material_card(
+          title = "WordCloud based on negative reviews",
+          plotOutput("sentiment_analysis_negative_wordcloud")
+        )
+      )
+    )),
 )
 

@@ -74,6 +74,7 @@ calendar <- calendar %>% mutate(price = as.numeric(transform_price(calendar$pric
 
 reviews_dataset <- reviews_dataset %>% mutate(date_year = get_year_from_date(reviews_dataset$date))
 reviews_dataset <- reviews_dataset %>% mutate(date_month = get_month_from_date(reviews_dataset$date))
+reviews_dataset$comments <- as.character(reviews_dataset$comments)
 
 ## Load map data
 ngb <- geojsonio::geojson_read("./Data/neighbourhoods_utf8.geojson", what = "sp")

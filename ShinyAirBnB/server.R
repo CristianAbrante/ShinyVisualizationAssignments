@@ -100,6 +100,42 @@ server <- function(input, output, session) {
                  plot_out
                })
 
+  output$sentiment_analysis_positive_wordcloud <-
+    renderPlot({
+                 material_spinner_show(session, "sentiment_analysis_positive_wordcloud")
+
+                 start_date_formatted <- as.Date(input$start_date, format = "%b %d, %Y")
+                 end_date_formatted <- as.Date(input$end_date, format = "%b %d, %Y")
+
+                 plot_input <- ifelse(input$start_date != "" & input$end_date != "",
+                                      reviews_dataset %>%
+                                        filter(as.Date(date, format = "%Y-%m-%d") >= start_date_formatted) %>%
+                                        filter(as.Date(date, format = "%Y-%m-%d") <= end_date_formatted),
+                                      reviews_dataset)
+
+                 material_spinner_hide(session, "sentiment_analysis_positive_wordcloud")
+
+                 show_positive_wordcloud(plot_input, TRUE)
+               })
+
+    output$sentiment_analysis_negative_wordcloud <-
+    renderPlot({
+                 material_spinner_show(session, "sentiment_analysis_negative_wordcloud")
+
+                 start_date_formatted <- as.Date(input$start_date, format = "%b %d, %Y")
+                 end_date_formatted <- as.Date(input$end_date, format = "%b %d, %Y")
+
+                 plot_input <- ifelse(input$start_date != "" & input$end_date != "",
+                                      reviews_dataset %>%
+                                        filter(as.Date(date, format = "%Y-%m-%d") >= start_date_formatted) %>%
+                                        filter(as.Date(date, format = "%Y-%m-%d") <= end_date_formatted),
+                                      reviews_dataset)
+
+                 material_spinner_hide(session, "sentiment_analysis_negative_wordcloud")
+
+                 show_positive_wordcloud(plot_input, FALSE)
+               })
+
   output$map <- renderLeaflet({
                                 #Set the aspects of the map that don't change
                                 leaflet(neighbourhoods, options = providerTileOptions(minZoom = 11, maxZoom = 14)) %>%
