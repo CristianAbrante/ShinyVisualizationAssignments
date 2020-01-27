@@ -8,7 +8,6 @@ source("utils/utils.R")
 # Load tabs
 source("views/first_tab.R")
 source("views/second_tab.R")
-source("views/third_tab.R")
 
 # Wrap shinymaterial apps in material_page
 ui <- material_page(
@@ -18,12 +17,10 @@ ui <- material_page(
   material_tabs(
     tabs = c(
       "Bar Plot - Availability" = "first_tab",
-      "Choropleth - Overview" = "second_tab",
-      "Third tab" = "third_tab"
+      "Maps" = "second_tab"
     )
   ),
   # Define tab content
   first_tab_content,
-  second_tab_content,
-  third_tab_content
+  second_tab_content
 )

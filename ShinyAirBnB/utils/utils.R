@@ -1,9 +1,15 @@
+# Load of necessary libraries.
+
 library(dplyr)
 library(geojsonR)
 library(leaflet)
 library(geojsonio)
 library(sf)
 library(lubridate)
+
+####################################################################
+#                     Dataset reading                              #
+####################################################################
 
 calendar_sample <-
   read.csv(
@@ -12,16 +18,67 @@ calendar_sample <-
     header = TRUE,
   )
 
+calendar <- read.csv("Data/calendar_sample.csv")
+
+# Remove NA
+calendar <- na.omit(calendar)
+
+# Read the listings dataset
 listings <- read.csv(
   './Data/listings.csv',
   encoding = "UTF-8",
   header = TRUE,
 )
 
-calendar <- read.csv("Data/calendar_sample.csv")
+neighbourhoods_list <- read.csv(
+  './Data/neighbourhoods.csv',
+  encoding = "UTF-8",
+  header = TRUE,
+)
 
-# Remove NA
-calendar <- na.omit(calendar)
+# We select the columns we want to load from listings_detailed
+listCols = c(1:100)
+listCols[1:106] = "NULL"
+listCols[1] = NA	        # id
+listCols[40] = NA	        # neighbourhood_cleansed
+listCols[61] = NA	        # price
+listCols[83] = NA	        # number_of_reviews
+listCols[85] = NA	        # first_review
+listCols[86] = NA	        # last_review
+listCols[87] = "integer"	# review_scores_rating
+listCols[88] = "integer"	# review_scores_accuracy
+listCols[89] = "integer"	# review_scores_cleanliness
+listCols[90] = "integer"	# review_scores_checkin
+listCols[91] = "integer"	# review_scores_communication
+listCols[92] = "integer"	# review_scores_location
+listCols[93] = "integer"	# review_scores_value
+listCols[106] = NA	      # reviews_per_month
+
+#Reading the listings_detailed file with the price data
+listings_detailed <-
+  read.csv(
+    file = "./Data/listings_detailed.csv",
+    sep = ",",
+    header = T,
+    encoding = "UTF-8",
+    colClasses = listCols
+  )
+
+## Load map data
+ngb <- geojsonio::geojson_read("./Data/neighbourhoods_utf8.geojson", what = "sp")
+ngb2 <- ngb[order(ngb$neighbourhood),] #We sort the neighbourhoods to have them in alphabetical order.
+
+#We set the chosen dataset for the map
+neighbourhoods <- ngb2
+
+####################################################################
+#                     Start graph                                  #
+####################################################################
+
+## Preprocess dataset
+calendar <- calendar %>% mutate(date_year = get_year_from_date(calendar$date))
+calendar <- calendar %>% mutate(date_month = get_month_from_date(calendar$date))
+calendar <- calendar %>% mutate(price = as.numeric(transform_price(calendar$price)))
 
 get_year_from_date <- function(date) {
   format(as.Date(date), "%Y")
@@ -36,103 +93,209 @@ transform_price <- function(price) {
   price_string <- sub(".", "", price)
   # Replace commas
   price_string <- gsub(",", "", price_string)
-
+  
   as.numeric(price_string)
 }
 
+
+###################### Constants ##################################
+date_picker_format <- "%b %d, %Y"
+dataset_date_format <- "%Y-%d-%m"
+
+####################################################################
+#                     Price filtering                              #
+####################################################################
+
 # Agreagtion of calendar and listings.
-calendar_and_listings <- inner_join(x = calendar_sample, y = listings, by = c("listing_id" = "id"))
-calendar_and_listings <- mutate(calendar_and_listings, computed_price = as.numeric(gsub("[$,]","",as.character(calendar_and_listings$price.x))))
+calendar_and_listings <-
+  inner_join(x = calendar_sample,
+             y = listings,
+             by = c("listing_id" = "id"))
+
+calendar_and_listings <- calendar_and_listings %>%
+  mutate(computed_price = as.numeric(gsub(
+    "[$,]",
+    "", as.character(calendar_and_listings$price.x)
+  )))
+
 
 # necessary for locale time.
-lct <- Sys.getlocale("LC_TIME"); Sys.setlocale("LC_TIME", "C");
+lct <- Sys.getlocale("LC_TIME")
+Sys.setlocale("LC_TIME", "C")
+
+
 # function that returns the prices per neighbourhood given an start and end date.
-get_price_per_neighbours_with_dates <- function(start_date, end_date) {
-  if (start_date != "" & end_date != "") {
-    start_date_formatted <-  as.Date(start_date, format = "%b %d, %Y");
-    end_date_formatted <- as.Date(end_date, format = "%b %d, %Y");
-    calendar_and_listings <- calendar_and_listings %>% 
-      filter(as.Date(date, format="%Y-%m-%d") >= start_date_formatted) %>% 
-      filter(as.Date(date, format="%Y-%m-%d") <= end_date_formatted) %>% 
-      group_by(neighbourhood) %>% 
-      summarise(avg_price = mean(computed_price)) %>% 
-      arrange(neighbourhood)
+
+get_price_per_neighbours_with_dates <-
+  function(start_date, end_date) {
+    data <- calendar_and_listings
+    if (start_date != "" & end_date != "") {
+      start_date_formatted <-
+        as.Date(start_date, format = date_picker_format)
+      end_date_formatted <-
+        as.Date(end_date, format = date_picker_format)
+      
+      data <- data %>%
+        filter(as.Date(date, format = dataset_date_format) >= start_date_formatted) %>%
+        filter(as.Date(date, format = dataset_date_format) <= end_date_formatted)
+    }
+    
+    data <- data %>% 
+      group_by(neighbourhood) %>%
+      summarise(avg_price = mean(computed_price))
+    
+    data <- left_join(neighbourhoods_list, data) %>% 
+      mutate(avg_price = ifelse(is.na(avg_price), 0, avg_price)) %>%
+      filter(neighbourhood != "Horcajo") %>%
+      select(neighbourhood, avg_price)
+
+    data[order(data$neighbourhood),]
+  }
+
+####################################################################
+#                       Score type                                 #
+####################################################################
+
+get_mean_score <- function(score_type) {
+  data <- listings_detailed %>% group_by(neighbourhood = neighbourhood_cleansed)
+  if (score_type == "rating") {
+    data %>% summarize(avg_score_rating = mean(review_scores_rating, na.rm = TRUE))
+  } else if (score_type == "accuracy") {
+    data %>% summarize(avg_score_accuracy = mean(review_scores_accuracy, na.rm = TRUE))
+  } else if (score_type == "cleanliness") {
+    data %>% summarize(avg_score_cleanliness = mean(review_scores_cleanliness, na.rm = TRUE))
+  } else if (score_type == "checkin") {
+    data %>% summarize(avg_score_checkin = mean(review_scores_checkin, na.rm = TRUE))
+  } else if (score_type == "communication") {
+    data %>% summarize(avg_score_communication = mean(review_scores_communication, na.rm = TRUE))
+  } else if (score_type == "location") {
+    data %>% summarize(avg_score_location = mean(review_scores_location, na.rm = TRUE))
+  } else if (score_type == "value") {
+    data %>% summarize(avg_score_value = mean(review_scores_value, na.rm = TRUE))
   } else {
-    calendar_and_listings %>%  
-      group_by(neighbourhood) %>% 
-      summarise(avg_price = mean(computed_price)) %>% 
-      arrange(neighbourhood)
+    data %>% summarize(avg_score_rating = mean(review_scores_rating, na.rm = TRUE))
   }
 }
 
-## Preprocess dataset
-calendar <- calendar %>% mutate(date_year = get_year_from_date(calendar$date))
-calendar <- calendar %>% mutate(date_month = get_month_from_date(calendar$date))
-calendar <- calendar %>% mutate(price = as.numeric(transform_price(calendar$price)))
+####################################################################
+#                    Number of apartments                          #
+####################################################################
 
-## Load map data
-ngb <- geojsonio::geojson_read("./Data/neighbourhoods_utf8.geojson", what = "sp")
-ngb2 <- ngb[order(ngb$neighbourhood),] #We sort the neighbourhoods to have them in alphabetical order.
- 
-# We select the columns we want to load from listings_detailed
-listCols = c(1:100)
-listCols[1:106] = "NULL"
-listCols[1] = NA	#id
-#listCols[5] = NA	#name
-#listCols[6] = NA	#summary
-#listCols[10] = NA	#neighborhood_overview
-#listCols[23] = NA	#host_since
-listCols[40] = NA	#neighbourhood_cleansed
-#listCols[49] = NA	#latitude
-#listCols[50] = NA	#longitude
-#listCols[52] = NA	#property_type
-listCols[61] = NA	#price
-listCols[83] = NA	#number_of_reviews
-listCols[85] = NA	#first_review
-listCols[86] = NA	#last_review
-listCols[87] = "integer"	#review_scores_rating
-listCols[88] = "integer"	#review_scores_accuracy
-listCols[89] = "integer"	#review_scores_cleanliness
-listCols[90] = "integer"	#review_scores_checkin
-listCols[91] = "integer"	#review_scores_communication
-listCols[92] = "integer"	#review_scores_location
-listCols[93] = "integer"	#review_scores_value
-listCols[106] = NA	#reviews_per_month
+get_flat_count_in_a_date <- function(date) {
+  data <- listings_detailed
+  
+  if (date != "") {
+    date_formatted <-
+      as.Date(date, format = date_picker_format)
+    data <-
+      data %>% filter(as.Date(first_review, format = dataset_date_format) <= date_formatted)
+  }
+  data <- data %>% 
+    group_by(neighbourhood = neighbourhood_cleansed) %>%
+    summarise(number_of_flats = n())
+  
+  data <- left_join(neighbourhoods_list, data) %>% 
+    mutate(number_of_flats = ifelse(is.na(number_of_flats), 0, number_of_flats)) %>%
+    filter(neighbourhood != "Horcajo") %>% 
+    select(neighbourhood, number_of_flats)
+  
+  data[order(data$neighbourhood),]
+}
 
-#Reading the file with the price data
-listings <- read.csv(file = "./Data/listings_detailed.csv", sep = ",", header = T, encoding = "UTF-8", colClasses = listCols)
-scal <- read.csv(file = "./Data/calendar_sample.csv", sep = ",", header = T)
+####################################################################
+#                         Bar plot                                 #
+####################################################################
 
-#We transform the prices to num values
-listings$numprices =  as.numeric(sub("$","",sub(".","",sub(",","",listings$price)))) 
+get_plot_label <- function(operation_type) {
+  if (operation_type == "price") {
+    "Price per night"
+  } else if (operation_type == "score") {
+    "Rating score"
+  } else if (operation_type == "listings") {
+    "Number of flats"
+  }
+}
 
-#We extract the review score avg per neighbourhood.
-neigh_mean_scores_rating <- aggregate(listings$review_scores_rating, list(listings$neighbourhood_cleansed), mean, na.rm=T)
-neigh_mean_scores_accuracy <- aggregate(listings$review_scores_accuracy, list(listings$neighbourhood_cleansed), mean, na.rm=T)
-neigh_mean_scores_cleanliness <- aggregate(listings$review_scores_cleanliness, list(listings$neighbourhood_cleansed), mean, na.rm=T)
-neigh_mean_scores_checkin <- aggregate(listings$review_scores_checkin, list(listings$neighbourhood_cleansed), mean, na.rm=T)
-neigh_mean_scores_communication <- aggregate(listings$review_scores_communication, list(listings$neighbourhood_cleansed), mean, na.rm=T)
-neigh_mean_scores_location <- aggregate(listings$review_scores_location, list(listings$neighbourhood_cleansed), mean, na.rm=T)
-neigh_mean_scores_value <- aggregate(listings$review_scores_value, list(listings$neighbourhood_cleansed), mean, na.rm=T)
+get_bar_plot <- function(data, operation_type) {
+  formatted_data <- data %>% arrange(desc(data[[2]])) %>% top_n(5)
+  
+  ggplot(data = formatted_data, aes(x = reorder(neighbourhood, -formatted_data[[2]]), y = formatted_data[[2]])) +
+    geom_bar(stat ="identity", fill = "#ff3e4c") +
+    labs(x = "Top neighbourhoods", y = get_plot_label(operation_type))
+}
 
-#We extract the price mean per neighbourhood.
-neigh_mean_prices <- aggregate(listings$numprices, list(listings$neighbourhood_cleansed), mean)
+####################################################################
+#                   cloropleth helpers                             #
+####################################################################
 
-#We compare length and (separately) that both vectors have the same components 
-length(ngb2@data[["neighbourhood"]]) == length(neigh_mean_prices$Group.1)
+get_label_html <- function(operation_type) {
+  base <- "<strong>%s</strong><br/>%g"
+  if (operation_type == "listings") {
+    paste(base, " flats")
+  } else if (operation_type == "score") {
+    paste(base, " ")
+  } else {
+    paste(base, " E")
+  }
+}
 
-#We create the labels for the map
-labels <- sprintf(
-  "<strong>%s</strong><br/>%g €",
-  neigh_mean_prices$Group.1, round(neigh_mean_prices$x, 2)
-) %>% lapply(htmltools::HTML)
+getLabels <- function(operation_type, data) {
+  sprintf(get_label_html(operation_type),
+          data[[1]],
+          round(data[[2]], 2)) %>% lapply(htmltools::HTML)
+}
 
-# We set some clours for our scale
-bins <- c(0, 50, 100, 200, 300, 400, 500, Inf)
-pal <- colorBin("YlOrRd", domain = neigh_mean_prices$x, bins = bins)
+getBins <- function(operation_type, data) {
+  if (operation_type == "price") {
+    c(0, 50, 100, 200, 300, 400, 500, Inf)
+  } else if (operation_type == "score") {
+    numeric_data <- data[[2]]
+    # example: c(75, 80, 85, 90, 95, 100)
+    bins <-
+      seq(min(numeric_data), max(numeric_data), (max(numeric_data) - min(numeric_data)) / 5)
+  } else if (operation_type == "listings") {
+    c(0, 50, 100, 200, 300, 500, 1000, 1500, Inf)
+  }
+}
 
+getPal <- function(operation_type, data) {
+  numeric_data <- data[[2]]
+  bins <- getBins(operation_type, data)
+  colorBin("YlOrRd", domain = round(numeric_data, 2), bins = bins)
+}
 
+addPoligonsToMap <- function(initialOptions, data, pal, labels) {
+  addPolygons(
+    initialOptions,
+    fillColor = ~ pal(data[[2]]),
+    weight = 2,
+    opacity = 1,
+    color = "white",
+    dashArray = "3",
+    fillOpacity = 0.3,
+    highlight = highlightOptions(
+      weight = 5,
+      color = "#666",
+      dashArray = "",
+      fillOpacity = 0.5,
+      bringToFront = TRUE
+    ),
+    label = labels,
+    labelOptions = labelOptions(
+      style = list("font-weight" = "normal", padding = "3px 8px"),
+      textsize = "15px",
+      direction = "auto"
+    )
+  )
+}
 
-#We set the chosen dataset for the map
-neighbourhoods <- ngb2
-
+addLegendToMap <- function(initialOptions, data, pal) {
+  addLegend(
+    initialOptions,
+    pal = pal,
+    values = ~ data[[2]],
+    opacity = 0.7,
+    title = NULL,
+    position = "bottomright"
+  )
+}
