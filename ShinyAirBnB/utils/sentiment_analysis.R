@@ -42,3 +42,5 @@ show_wordcloud <- function(dataset, positive) {
           max.words=100, random.order=FALSE, rot.per=0.35, random.color = T,
           colors=brewer.pal(8, "Dark2"))
 }
+
+

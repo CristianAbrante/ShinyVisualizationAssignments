@@ -138,8 +138,6 @@ labels <- sprintf(
 bins <- c(0, 50, 100, 200, 300, 400, 500, Inf)
 pal <- colorBin("YlOrRd", domain = neigh_mean_prices$x, bins = bins)
 
-
-
 #We set the chosen dataset for the map
 neighbourhoods <- ngb2
 

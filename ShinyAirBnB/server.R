@@ -1,6 +1,7 @@
 library(shiny)
 library(ggplot2)
 library(dplyr)
+library(shinymaterial)
 
 # Load data for tabs
 source("utils/utils.R")
@@ -48,93 +49,132 @@ server <- function(input, output, session) {
 
                  Sys.sleep(1.5) # sleep to show spinner example longer
 
-                 start_date_formatted <- as.Date(input$start_date, format = "%b %d, %Y")
-                 end_date_formatted <- as.Date(input$end_date, format = "%b %d, %Y")
+                 if (input$start_date != "" & input$end_date != "") {
+                   start_date_formatted <- as.Date(input$start_date, format = "%b %d, %Y")
+                   end_date_formatted <- as.Date(input$end_date, format = "%b %d, %Y")
 
-                 plot_input <- ifelse(input$start_date != "" & input$end_date != "",
-                                      calendar %>%
-                                        filter(as.Date(date, format = "%Y-%m-%d") >= start_date_formatted) %>%
-                                        filter(as.Date(date, format = "%Y-%m-%d") <= end_date_formatted),
-                                      calendar)
+                   plot_input <- calendar %>%
+                     filter(as.Date(date, format = "%Y-%m-%d") >= start_date_formatted) %>%
+                     filter(as.Date(date, format = "%Y-%m-%d") <= end_date_formatted)
 
-                 plot_out <- plot_input %>%
-                   group_by(date_year, date_month) %>%
-                   summarise(average_price = mean(price, na.rm = TRUE)) %>%
-                   ggplot(aes(x = paste(date_year, "-", date_month), y = average_price)) +
-                   geom_col(fill = "brown") +
-                   ggtitle("Price over the years") +
-                   xlab("Date") +
-                   ylab("Price") +
-                   fancy_plot()
+                   plot_out <- plot_input %>%
+                     group_by(date_year, date_month) %>%
+                     summarise(average_price = mean(price, na.rm = TRUE)) %>%
+                     ggplot(aes(x = paste(date_year, "-", date_month), y = average_price)) +
+                     geom_col(fill = "brown") +
+                     ggtitle("Price over the years") +
+                     xlab("Date") +
+                     ylab("Price") +
+                     fancy_plot()
 
-                 material_spinner_hide(session, "calendar_price_year_plot")
+                   material_spinner_hide(session, "calendar_price_year_plot")
 
-                 plot_out
+                   plot_out
+                 }
+                 else {
+                   plot_input <- calendar
+
+                   plot_out <- plot_input %>%
+                     group_by(date_year, date_month) %>%
+                     summarise(average_price = mean(price, na.rm = TRUE)) %>%
+                     ggplot(aes(x = paste(date_year, "-", date_month), y = average_price)) +
+                     geom_col(fill = "brown") +
+                     ggtitle("Price over the years") +
+                     xlab("Date") +
+                     ylab("Price") +
+                     fancy_plot()
+
+                   material_spinner_hide(session, "calendar_price_year_plot")
+
+                   plot_out
+                 }
                })
 
   output$calendar_reviews_year_plot <-
     renderPlot({
                  material_spinner_show(session, "calendar_reviews_year_plot")
 
-                 start_date_formatted <- as.Date(input$start_date, format = "%b %d, %Y")
-                 end_date_formatted <- as.Date(input$end_date, format = "%b %d, %Y")
+                 if (input$start_date != "" & input$end_date != "") {
+                   start_date_formatted <- as.Date(input$start_date, format = "%b %d, %Y")
+                   end_date_formatted <- as.Date(input$end_date, format = "%b %d, %Y")
 
-                 plot_input <- ifelse(input$start_date != "" & input$end_date != "",
-                                      reviews_dataset %>%
-                                        filter(as.Date(date, format = "%Y-%m-%d") >= start_date_formatted) %>%
-                                        filter(as.Date(date, format = "%Y-%m-%d") <= end_date_formatted),
-                                      reviews_dataset)
+                   plot_input <- reviews_dataset %>%
+                     filter(as.Date(date, format = "%Y-%m-%d") >= start_date_formatted) %>%
+                     filter(as.Date(date, format = "%Y-%m-%d") <= end_date_formatted)
 
-                 plot_out <- plot_input %>%
-                   group_by(date) %>%
-                   summarise(reviews_number = n()) %>%
-                   ggplot(aes(x = as.Date(date, format = "%Y-%m-%d"), y = reviews_number)) +
-                   geom_point(color = "brown") +
-                   geom_smooth(color = "black") +
-                   ggtitle("Number of Reviews over the years") +
-                   xlab("Date") +
-                   ylab("Number of Reviews") +
-                   fancy_plot()
+                   plot_out <- plot_input %>%
+                     group_by(date) %>%
+                     summarise(reviews_number = n()) %>%
+                     ggplot(aes(x = as.Date(date, format = "%Y-%m-%d"), y = reviews_number)) +
+                     geom_point(color = "brown") +
+                     geom_smooth(color = "black") +
+                     ggtitle("Number of Reviews over the years") +
+                     xlab("Date") +
+                     ylab("Number of Reviews") +
+                     fancy_plot()
 
-                 material_spinner_hide(session, "calendar_reviews_year_plot")
+                   material_spinner_hide(session, "calendar_reviews_year_plot")
+                   plot_out
+                 }
+                 else {
+                   plot_input <- reviews_dataset
 
-                 plot_out
+                   plot_out <- plot_input %>%
+                     group_by(date) %>%
+                     summarise(reviews_number = n()) %>%
+                     ggplot(aes(x = as.Date(date, format = "%Y-%m-%d"), y = reviews_number)) +
+                     geom_point(color = "brown") +
+                     geom_smooth(color = "black") +
+                     ggtitle("Number of Reviews over the years") +
+                     xlab("Date") +
+                     ylab("Number of Reviews") +
+                     fancy_plot()
+
+                   material_spinner_hide(session, "calendar_reviews_year_plot")
+                   plot_out
+                 }
                })
 
   output$sentiment_analysis_positive_wordcloud <-
     renderPlot({
                  material_spinner_show(session, "sentiment_analysis_positive_wordcloud")
 
-                 start_date_formatted <- as.Date(input$start_date, format = "%b %d, %Y")
-                 end_date_formatted <- as.Date(input$end_date, format = "%b %d, %Y")
+                 if (input$start_date != "" & input$end_date != "") {
+                   start_date_formatted <- as.Date(input$start_date, format = "%b %d, %Y")
+                   end_date_formatted <- as.Date(input$end_date, format = "%b %d, %Y")
 
-                 plot_input <- ifelse(input$start_date != "" & input$end_date != "",
-                                      reviews_dataset %>%
-                                        filter(as.Date(date, format = "%Y-%m-%d") >= start_date_formatted) %>%
-                                        filter(as.Date(date, format = "%Y-%m-%d") <= end_date_formatted),
-                                      reviews_dataset)
+                   plot_input <- reviews_dataset %>%
+                     filter(as.Date(date, format = "%Y-%m-%d") >= start_date_formatted) %>%
+                     filter(as.Date(date, format = "%Y-%m-%d") <= end_date_formatted)
+                   show_wordcloud(plot_input, TRUE)
+                 }
+                 else {
+                   plot_input <- reviews_dataset
+                   show_wordcloud(plot_input, TRUE)
+                 }
 
                  material_spinner_hide(session, "sentiment_analysis_positive_wordcloud")
-
-                 show_wordcloud(plot_input, TRUE)
                })
 
-    output$sentiment_analysis_negative_wordcloud <-
+  output$sentiment_analysis_negative_wordcloud <-
     renderPlot({
                  material_spinner_show(session, "sentiment_analysis_negative_wordcloud")
 
-                 start_date_formatted <- as.Date(input$start_date, format = "%b %d, %Y")
-                 end_date_formatted <- as.Date(input$end_date, format = "%b %d, %Y")
+                 if (input$start_date != "" & input$end_date != "") {
+                   start_date_formatted <- as.Date(input$start_date, format = "%b %d, %Y")
+                   end_date_formatted <- as.Date(input$end_date, format = "%b %d, %Y")
 
-                 plot_input <- ifelse(input$start_date != "" & input$end_date != "",
-                                      reviews_dataset %>%
-                                        filter(as.Date(date, format = "%Y-%m-%d") >= start_date_formatted) %>%
-                                        filter(as.Date(date, format = "%Y-%m-%d") <= end_date_formatted),
-                                      reviews_dataset)
+                   plot_input <- reviews_dataset %>%
+                     filter(as.Date(date, format = "%Y-%m-%d") >= start_date_formatted) %>%
+                     filter(as.Date(date, format = "%Y-%m-%d") <= end_date_formatted)
+                   show_wordcloud(plot_input, FALSE)
+                 }
+                 else {
+                   plot_input <- reviews_dataset
+                   show_wordcloud(plot_input, FALSE)
+                 }
 
                  material_spinner_hide(session, "sentiment_analysis_negative_wordcloud")
-
-                 show_wordcloud(plot_input, FALSE)
                })
 
   output$map <- renderLeaflet({
