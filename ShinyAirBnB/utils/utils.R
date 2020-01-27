@@ -6,6 +6,7 @@ library(leaflet)
 library(geojsonio)
 library(sf)
 library(lubridate)
+library(ggplot2)
 
 ####################################################################
 #                     Dataset reading                              #
@@ -22,6 +23,8 @@ calendar <- read.csv("Data/calendar_sample.csv")
 
 # Remove NA
 calendar <- na.omit(calendar)
+
+reviews_dataset <- read.csv("Data/reviews_detailed_sample.csv", encoding = "UTF-8")
 
 # Read the listings dataset
 listings <- read.csv(
@@ -299,3 +302,17 @@ addLegendToMap <- function(initialOptions, data, pal) {
     position = "bottomright"
   )
 }
+reviews_dataset <- reviews_dataset %>% mutate(date_year = get_year_from_date(reviews_dataset$date))
+reviews_dataset <- reviews_dataset %>% mutate(date_month = get_month_from_date(reviews_dataset$date))
+reviews_dataset$comments <- as.character(reviews_dataset$comments)
+
+fancy_text_title <- theme(title = element_text(color = "chocolate",
+                                                      size = 14, face = "bold", margin = 3, line = 2))
+
+fancy_plot <-
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks = element_blank(),
+    legend.title = element_blank(),
+  ) +
+  fancy_text_title
