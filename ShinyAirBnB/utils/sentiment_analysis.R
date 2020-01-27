@@ -2,10 +2,11 @@ library(sentimentr)
 library(dplyr)
 library(cld3) # For detecting languages
 library(tm) # For text mining
-library(wordcloud) # For word cloud
-set.seed(1234)
+library(wordcloud2) # For word cloud
+
 
 show_wordcloud <- function(dataset, positive) {
+  dataset <- dataset %>% select(comments)
   # Filter only english comments (better understanding for sentimentr
   english_reviews_dataset <- dataset %>% filter(detect_language(comments) == 'en')
 
@@ -35,12 +36,12 @@ show_wordcloud <- function(dataset, positive) {
   docs_term_matrix <- as.matrix(TermDocumentMatrix(docs))
   sorted_docs_term_matrix <- sort(rowSums(docs_term_matrix), decreasing=TRUE)
   frequent_words <- data.frame(word = names(sorted_docs_term_matrix), freq=sorted_docs_term_matrix)
-  #head(frequent_words, 10)
+  View(head(frequent_words, 10))
 
   ## Generate wordcloud
-  wordcloud(words = frequent_words$word, freq = frequent_words$freq, min.freq = 1,
-          max.words=100, random.order=FALSE, rot.per=0.35, random.color = T,
-          colors=brewer.pal(8, "Dark2"))
+  set.seed(1234)
+  wordcloud2(data=frequent_words, size=1.6, color='random-dark')
 }
 
+show_wordcloud(x, TRUE)
 

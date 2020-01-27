@@ -65,7 +65,7 @@ server <- function(input, output, session) {
                      ggtitle("Price over the years") +
                      xlab("Date") +
                      ylab("Price") +
-                     fancy_plot()
+                     fancy_plot
 
                    material_spinner_hide(session, "calendar_price_year_plot")
 
@@ -82,7 +82,7 @@ server <- function(input, output, session) {
                      ggtitle("Price over the years") +
                      xlab("Date") +
                      ylab("Price") +
-                     fancy_plot()
+                     fancy_plot
 
                    material_spinner_hide(session, "calendar_price_year_plot")
 
@@ -111,7 +111,7 @@ server <- function(input, output, session) {
                      ggtitle("Number of Reviews over the years") +
                      xlab("Date") +
                      ylab("Number of Reviews") +
-                     fancy_plot()
+                     fancy_plot
 
                    material_spinner_hide(session, "calendar_reviews_year_plot")
                    plot_out
@@ -128,7 +128,7 @@ server <- function(input, output, session) {
                      ggtitle("Number of Reviews over the years") +
                      xlab("Date") +
                      ylab("Number of Reviews") +
-                     fancy_plot()
+                     fancy_plot
 
                    material_spinner_hide(session, "calendar_reviews_year_plot")
                    plot_out
