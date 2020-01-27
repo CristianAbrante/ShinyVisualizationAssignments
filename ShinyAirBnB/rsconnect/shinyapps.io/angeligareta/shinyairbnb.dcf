@@ -5,6 +5,6 @@ account: angeligareta
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1705124
-bundleId: 2754956
+bundleId: 2754968
 url: https://angeligareta.shinyapps.io/shinyairbnb/
-when: 1580087992.80581
+when: 1580088447.34406

@@ -4,6 +4,7 @@ library(dplyr)
 
 # Load data for tabs
 source("utils/utils.R")
+source("utils/sentiment_analysis.R")
 
 server <- function(input, output, session) {
 
@@ -115,7 +116,7 @@ server <- function(input, output, session) {
 
                  material_spinner_hide(session, "sentiment_analysis_positive_wordcloud")
 
-                 show_positive_wordcloud(plot_input, TRUE)
+                 show_wordcloud(plot_input, TRUE)
                })
 
     output$sentiment_analysis_negative_wordcloud <-
@@ -133,7 +134,7 @@ server <- function(input, output, session) {
 
                  material_spinner_hide(session, "sentiment_analysis_negative_wordcloud")
 
-                 show_positive_wordcloud(plot_input, FALSE)
+                 show_wordcloud(plot_input, FALSE)
                })
 
   output$map <- renderLeaflet({

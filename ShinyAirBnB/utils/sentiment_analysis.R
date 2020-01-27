@@ -5,7 +5,7 @@ library(tm) # For text mining
 library(wordcloud) # For word cloud
 set.seed(1234)
 
-show_positive_wordcloud <- function(dataset, positive) {
+show_wordcloud <- function(dataset, positive) {
   # Filter only english comments (better understanding for sentimentr
   english_reviews_dataset <- dataset %>% filter(detect_language(comments) == 'en')
 
@@ -42,5 +42,3 @@ show_positive_wordcloud <- function(dataset, positive) {
           max.words=100, random.order=FALSE, rot.per=0.35, random.color = T,
           colors=brewer.pal(8, "Dark2"))
 }
-
-show_positive_wordcloud(reviews_dataset, TRUE)
